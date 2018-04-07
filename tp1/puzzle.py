@@ -2,13 +2,48 @@
 
 import sys
 import math
+from state import State
+
+def solvable():
+    initial_state_wo_zero = list(initial_state)
+    initial_state_wo_zero.remove(0)
+    number_of_inversions = 0
+    for i in range(0,initial_state_len - 1):
+        for j in range(i+1,initial_state_len - 1):
+            if initial_state_wo_zero[j] > initial_state_wo_zero[i]:
+                number_of_inversions += 1 
+
+    if number_of_inversions % 2 == 0:
+        return True
+    else:
+        return False
 
 def find_blank_pos(state):
-    pos = 0
-    for x in state:
-        if x == '0':
-            return pos
-        pos += 1
+    return state.index(0)
+
+def up(state, pos):
+    new_state = list(state)
+    new_state[pos] = new_state[pos - boundary]
+    new_state[pos - boundary] = 0
+    return new_state
+
+def down(state, pos):
+    new_state = list(state)
+    new_state[pos] = new_state[pos + boundary]
+    new_state[pos + boundary] = 0
+    return new_state
+
+def left(state, pos):
+    new_state = list(state)
+    new_state[pos] = new_state[pos - 1]
+    new_state[pos - 1] = 0
+    return new_state
+
+def right(state, pos):
+    new_state = list(state)
+    new_state[pos] = new_state[pos + 1]
+    new_state[pos + 1] = 0
+    return new_state
 
 def allowed_moves(pos):
     allowed_moves_list = ['up','down','right','left']
@@ -32,29 +67,65 @@ def column_ranges():
     first_column = list(range(0,initial_state_len - 1,boundary))
     last_column = list(range(boundary - 1,initial_state_len,boundary))
     return first_column, last_column
-    
 
-print ('input #:', str(len(sys.argv)))
-print ('input #:', str(sys.argv))
+def bfs(initial_state):
+
+    print ('Starting BFS......')
+
+    explored_states = []
+    cost = 0
+    frontier = [State(initial_state,None,cost,None)]
+
+    if frontier[0].state == desired_state:
+        return frontier[0].cost,frontier[0].move_list
+    
+    while frontier:
+        current_node = frontier.pop(0)
+        explored_states.append(current_node)
+        cost += 1
+        #print('cost so far: ', str(cost))
+        #print('current node moves: ', str(current_node.move_list))
+        blank_pos = find_blank_pos(current_node.state)
+        for move in allowed_moves(blank_pos):
+            #print('trying move: ', move)
+            new_state = globals()[move](current_node.state,blank_pos)
+            #print('child node state: ', str(new_state))
+            new_moves_list = list(current_node.move_list)
+            new_moves_list.append(move)
+            #print('new move list: ', str(new_moves_list))
+            child = State(new_state,current_node,cost,new_moves_list)
+            
+            if child not in (frontier or explored_states):
+                if child.state == desired_state:
+                    return child.cost,child.move_list
+                frontier.append(child)
 
 if len(sys.argv) != 2:
     print ('Wrong number of arguments given ',str(len(sys.argv)),' expected 1')
     print ('Usage example: ', str(sys.argv[0]), ' 1,0,5,6,4,7,2,3,8')
     sys.exit(1)
 
-initial_state = sys.argv[1].split(',')
+initial_state = [ int(x) for x in sys.argv[1].split(',') ]
 initial_state_len = int(len(initial_state))
+
 # With this I get if the matrix is 3x3 or 4x4 or even bigger
 boundary = int(math.sqrt( initial_state_len ))
 
-desired_state = []
 # Sets the desired state
-for x in range(0, initial_state_len):
-    print ('value: ' + str(x))
-    desired_state.append(str(x))
+desired_state = list(range(0,initial_state_len))
 
-cost = 0
-steps = []
-evaluated_positions = 0
-
+#Calculates the positions of the most left/right columns which restric some moves
 first_column, last_column = column_ranges()
+
+if boundary == 3:
+    if solvable():
+        cost, move_list = bfs(initial_state)
+        print('BFS Cost: ',cost)
+        print('BFS Move List: ',move_list)
+    else:
+        print ('Puzzle is not solvable')
+        sys.exit(1)
+else:
+        cost, move_list = bfs(initial_state)
+        print('BFS Cost: ',cost)
+        print('BFS Move List: ',move_list)
