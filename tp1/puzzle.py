@@ -10,14 +10,29 @@ def solvable():
     number_of_inversions = 0
     for i in range(0,initial_state_len - 1):
         for j in range(i+1,initial_state_len - 1):
-            if initial_state_wo_zero[j] > initial_state_wo_zero[i]:
+            if initial_state_wo_zero[i] > initial_state_wo_zero[j]:
                 number_of_inversions += 1 
 
-    if number_of_inversions % 2 == 0:
+    blank_on_odd_row_from_bottom = False
+
+    if math.floor((find_blank_pos(initial_state))/boundary)+1 %2 != 0:
+        blank_on_odd_row_from_bottom = True
+    
+    #print('boundary even: ', boundary % 2  == 0)
+    #print('blank_on_odd_row_from_bottom: ', blank_on_odd_row_from_bottom)
+    #print('# of inversions: ', number_of_inversions)
+    #print('row: ', math.floor((find_blank_pos(initial_state))/boundary)+1)
+
+    #boundary is odd and there is an even number of inversions
+    if boundary % 2  != 0 and number_of_inversions % 2 == 0:
+        return True
+    #boundary is even, 0 is on an odd row, counting from below, and the number of inversions is even
+    elif boundary % 2  == 0 and blank_on_odd_row_from_bottom and  number_of_inversions % 2 == 0:
         return True
     else:
         return False
 
+    
 def find_blank_pos(state):
     return state.index(0)
 
@@ -117,15 +132,10 @@ desired_state = list(range(0,initial_state_len))
 #Calculates the positions of the most left/right columns which restric some moves
 first_column, last_column = column_ranges()
 
-if boundary == 3:
-    if solvable():
-        cost, move_list = bfs(initial_state)
-        print('BFS Cost: ',cost)
-        print('BFS Move List: ',move_list)
-    else:
-        print ('Puzzle is not solvable')
-        sys.exit(1)
+if solvable():
+    cost, move_list = bfs(initial_state)
+    print('BFS Cost: ',cost)
+    print('BFS Move List: ',move_list)
 else:
-        cost, move_list = bfs(initial_state)
-        print('BFS Cost: ',cost)
-        print('BFS Move List: ',move_list)
+    print ('Puzzle is not solvable')
+    sys.exit(1)
