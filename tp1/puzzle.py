@@ -32,7 +32,27 @@ def solvable():
     else:
         return False
 
-    
+def solved_board_states_list(node):
+    solved_board_states = []
+    while node.parent is not None:
+        solved_board_states.insert(0,node.state)
+        node = node.parent
+    solved_board_states.insert(0,initial_state)
+    return solved_board_states
+
+def print_results(node):
+    print('BFS Cost: ',node.cost)
+    move_list = node.move_list
+    move_list_len = len(move_list)
+    solved_board_states = solved_board_states_list(node)
+    i = 0
+    for board in solved_board_states:
+        print('Board State: ', board)
+        if(i < move_list_len):
+            print('Move: ', move_list[i])
+        i += 1
+
+
 def find_blank_pos(state):
     return state.index(0)
 
@@ -92,7 +112,7 @@ def bfs(initial_state):
     frontier = [State(initial_state,None,cost,None)]
 
     if frontier[0].state == desired_state:
-        return frontier[0].cost,frontier[0].move_list
+        return frontier[0]
     
     while frontier:
         current_node = frontier.pop(0)
@@ -112,7 +132,7 @@ def bfs(initial_state):
             
             if child not in (frontier or explored_states):
                 if child.state == desired_state:
-                    return child.cost,child.move_list
+                    return child
                 frontier.append(child)
 
 if len(sys.argv) != 2:
@@ -133,9 +153,7 @@ desired_state = list(range(0,initial_state_len))
 first_column, last_column = column_ranges()
 
 if solvable():
-    cost, move_list = bfs(initial_state)
-    print('BFS Cost: ',cost)
-    print('BFS Move List: ',move_list)
+    print_results(bfs(initial_state))
 else:
     print ('Puzzle is not solvable')
     sys.exit(1)
