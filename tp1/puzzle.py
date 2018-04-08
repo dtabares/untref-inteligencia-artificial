@@ -41,7 +41,7 @@ def solved_board_states_list(node):
     return solved_board_states
 
 def print_results(node):
-    print('BFS Cost: ',node.cost)
+    print('Puzzle Solved')
     move_list = node.move_list
     move_list_len = len(move_list)
     solved_board_states = solved_board_states_list(node)
@@ -51,6 +51,10 @@ def print_results(node):
         if(i < move_list_len):
             print('Move: ', move_list[i])
         i += 1
+    
+    print('###### STATS: ########')
+    print('Evaluated Positions: ',node.cost)
+    print('Min Cost: ', move_list_len)
 
 
 def find_blank_pos(state):
@@ -118,8 +122,6 @@ def bfs(initial_state):
         current_node = frontier.pop(0)
         explored_states.append(current_node)
         cost += 1
-        #print('cost so far: ', str(cost))
-        #print('current node moves: ', str(current_node.move_list))
         blank_pos = find_blank_pos(current_node.state)
         for move in allowed_moves(blank_pos):
             #print('trying move: ', move)
