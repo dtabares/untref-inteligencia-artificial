@@ -147,7 +147,17 @@ def dldfs(initial_state, limit):
 
 def idfs(initial_state):
     print ('Solving puzzle with Iterative DFS')
-    pass
+    cost = 0
+    limit = 100
+    initial_node = State(initial_state,None,cost,None)
+    previously_visited_nodes = []
+    previously_visited_nodes.append(initial_node)
+    for current_limit in range(limit):
+        node, total_cost = recursive_dfs(initial_node,current_limit,previously_visited_nodes)
+        if isinstance(node, State):
+            return node, total_cost
+    
+    
 
 
 def recursive_dfs(node,limit,previously_visited_nodes=[]):
@@ -179,6 +189,8 @@ def recursive_dfs(node,limit,previously_visited_nodes=[]):
             result = recursive_dfs(child,limit,previously_visited_nodes)
             if result == 'CUTOFF':
                 cutoff_occurred = True
+            elif result == None:
+                continue
             else:
                 return result
 
@@ -186,7 +198,8 @@ def recursive_dfs(node,limit,previously_visited_nodes=[]):
         #print ('CUTOFF2')
         return 'CUTOFF'
     else:
-        raise Exception('Error')
+        #raise Exception('Error')
+        return None
 
 
 if len(sys.argv) != 2:
@@ -213,6 +226,12 @@ if solvable():
         print(result)
     else:
         print_results(result,total_cost)
+
+    # #result,total_cost = idfs(initial_state)
+    # if isinstance(result, str):
+    #     print(result)
+    # else:
+    #     print_results(result,total_cost)
 
 else:
     print ('Puzzle is not solvable')
