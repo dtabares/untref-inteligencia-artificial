@@ -3,6 +3,9 @@ class State:
     self.state = state
     self.parent = parent
     self.cost = cost
+
+    if self.state:
+      self.str_state = ''.join(str(e) for e in self.state)
     
     if move_list is not None:
       self.move_list = move_list

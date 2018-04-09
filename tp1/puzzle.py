@@ -108,17 +108,16 @@ def column_ranges():
 def bfs(initial_state):
     print ('Solving puzzle with BFS')
 
-    explored_states = []
+    explored_states = set()
     cost = 0
     frontier = [State(initial_state,None,cost,None)]
 
     if frontier[0].state == desired_state:
-        #return frontier[0]
         return Result(frontier[0],frontier[0].cost,False,True)
     
     while frontier:
         current_node = frontier.pop(0)
-        explored_states.append(current_node)
+        explored_states.add(current_node.str_state)
         cost += 1
         blank_pos = find_blank_pos(current_node.state)
         for move in allowed_moves(blank_pos):
@@ -130,14 +129,14 @@ def bfs(initial_state):
             #print('new move list: ', str(new_moves_list))
             child = State(new_state,current_node,cost,new_moves_list)
             
-            if child not in (frontier or explored_states):
+            if child.str_state not in explored_states:
                 if child.state == desired_state:
                     #return child
                     return Result(child,child.cost,False,True)
                 frontier.append(child)
 
 def dldfs(initial_state, limit):
-    #print ('Solving puzzle with Depth Limited DFS')
+    print ('Solving puzzle with Depth Limited DFS')
     cost = 0
     initial_node = State(initial_state,None,cost,None)
     previously_visited_nodes = []
@@ -227,8 +226,8 @@ first_column, last_column = column_ranges()
 
 if solvable():
     print_results(bfs(initial_state))
-    print_results(dldfs(initial_state,12))
-    print_results(idfs(initial_state))
+    #print_results(dldfs(initial_state,12))
+    #print_results(idfs(initial_state))
 
 else:
     print ('Puzzle is not solvable')
