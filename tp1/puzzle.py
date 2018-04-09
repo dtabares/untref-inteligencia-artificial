@@ -225,9 +225,9 @@ desired_state = list(range(0,initial_state_len))
 first_column, last_column = column_ranges()
 
 if solvable():
-    #print_results(bfs(initial_state))
+    print_results(bfs(initial_state))
     print_results(dldfs(initial_state,100))
-    #print_results(idfs(initial_state))
+    print_results(idfs(initial_state))
 
 else:
     print ('Puzzle is not solvable')
