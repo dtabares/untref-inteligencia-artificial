@@ -17,11 +17,6 @@ def solvable():
 
     if math.floor((find_blank_pos(initial_state))/boundary)+1 %2 != 0:
         blank_on_odd_row_from_bottom = True
-    
-    #print('boundary even: ', boundary % 2  == 0)
-    #print('blank_on_odd_row_from_bottom: ', blank_on_odd_row_from_bottom)
-    #print('# of inversions: ', number_of_inversions)
-    #print('row: ', math.floor((find_blank_pos(initial_state))/boundary)+1)
 
     #boundary is odd and there is an even number of inversions
     if boundary % 2  != 0 and number_of_inversions % 2 == 0:
@@ -40,7 +35,7 @@ def solved_board_states_list(node):
     solved_board_states.insert(0,initial_state)
     return solved_board_states
 
-def print_results(node):
+def print_results(node, total_cost):
     print('Puzzle Solved')
     move_list = node.move_list
     move_list_len = len(move_list)
@@ -53,8 +48,12 @@ def print_results(node):
         i += 1
     
     print('###### STATS: ########')
-    print('Evaluated Positions: ',node.cost)
+    if total_cost is None:
+        print('Evaluated Positions: ',node.cost)
+    else:
+        print('Evaluated Positions: ',total_cost)
     print('Min Cost: ', move_list_len)
+    print('\n \n')
 
 
 def find_blank_pos(state):
@@ -109,7 +108,7 @@ def column_ranges():
 
 def bfs(initial_state):
 
-    print ('Starting BFS......')
+    print ('Solving puzzle with BFS')
 
     explored_states = []
     cost = 0
@@ -137,6 +136,59 @@ def bfs(initial_state):
                     return child
                 frontier.append(child)
 
+def dldfs(initial_state, limit):
+    print ('Solving puzzle with Depth Limited DFS')
+    cost = 0
+    initial_node = State(initial_state,None,cost,None)
+    previously_visited_nodes = []
+    previously_visited_nodes.append(initial_node)
+    node, total_cost = recursive_dfs(initial_node,limit,previously_visited_nodes)
+    return node, total_cost
+
+def idfs(initial_state):
+    print ('Solving puzzle with Iterative DFS')
+    pass
+
+
+def recursive_dfs(node,limit,previously_visited_nodes=[]):
+    if node.state == desired_state:
+        #print ('solution cost: ', node.cost)
+        return node,len(previously_visited_nodes)
+    if limit == 0:
+        return 'CUTOFF'
+    
+    cutoff_occurred = False
+    
+    #print('child node state: ', str(node.state))
+    #print('limit: ', limit)
+    #print('previously_visited_nodes len: ', len(previously_visited_nodes))
+    cost = node.cost
+    #print('cost: ', cost)
+    limit = limit - 1
+
+    blank_pos = find_blank_pos(node.state)
+    for move in allowed_moves(blank_pos):
+        #print('move: ',move)
+        new_state = globals()[move](node.state,blank_pos)
+        new_moves_list = list(node.move_list)
+        new_moves_list.append(move)
+        child = State(new_state,node,cost,new_moves_list)
+        if child not in previously_visited_nodes:
+            child.cost += 1
+            previously_visited_nodes.append(child)
+            result = recursive_dfs(child,limit,previously_visited_nodes)
+            if result == 'CUTOFF':
+                cutoff_occurred = True
+            else:
+                return result
+
+    if cutoff_occurred:
+        #print ('CUTOFF2')
+        return 'CUTOFF'
+    else:
+        raise Exception('Error')
+
+
 if len(sys.argv) != 2:
     print ('Wrong number of arguments given ',str(len(sys.argv)),' expected 1')
     print ('Usage example: ', str(sys.argv[0]), ' 1,0,5,6,4,7,2,3,8')
@@ -155,7 +207,13 @@ desired_state = list(range(0,initial_state_len))
 first_column, last_column = column_ranges()
 
 if solvable():
-    print_results(bfs(initial_state))
+    print_results(bfs(initial_state),None)
+    result,total_cost = dldfs(initial_state,12)
+    if isinstance(result, str):
+        print(result)
+    else:
+        print_results(result,total_cost)
+
 else:
     print ('Puzzle is not solvable')
     sys.exit(1)

@@ -10,4 +10,7 @@ class State:
       self.move_list = []
   
   def __eq__(self, other):
-        return self.state == other.state
+    if type(self) is type(other):
+      return self.state == other.state
+    else:
+      return False
