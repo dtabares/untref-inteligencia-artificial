@@ -3,6 +3,7 @@
 import sys
 import math
 from state import State
+from result import Result
 
 def solvable():
     initial_state_wo_zero = list(initial_state)
@@ -35,25 +36,23 @@ def solved_board_states_list(node):
     solved_board_states.insert(0,initial_state)
     return solved_board_states
 
-def print_results(node, total_cost):
-    print('Puzzle Solved')
-    move_list = node.move_list
-    move_list_len = len(move_list)
-    solved_board_states = solved_board_states_list(node)
-    i = 0
-    for board in solved_board_states:
-        print('Board State: ', board)
-        if(i < move_list_len):
-            print('Move: ', move_list[i])
-        i += 1
-    
-    print('###### STATS: ########')
-    if total_cost is None:
-        print('Evaluated Positions: ',node.cost)
-    else:
-        print('Evaluated Positions: ',total_cost)
-    print('Min Cost: ', move_list_len)
-    print('\n \n')
+def print_results(result):
+    if result.solved:
+        print('Puzzle Solved')
+        move_list = result.node.move_list
+        move_list_len = len(move_list)
+        solved_board_states = solved_board_states_list(result.node)
+        i = 0
+        for board in solved_board_states:
+            print('Board State: ', board)
+            if(i < move_list_len):
+                print('Move: ', move_list[i])
+            i += 1
+        
+        print('###### STATS: ########')
+        print('Evaluated Positions: ',result.cost)
+        print('Min Cost: ', move_list_len)
+        print('\n \n')
 
 
 def find_blank_pos(state):
@@ -107,7 +106,6 @@ def column_ranges():
     return first_column, last_column
 
 def bfs(initial_state):
-
     print ('Solving puzzle with BFS')
 
     explored_states = []
@@ -115,7 +113,8 @@ def bfs(initial_state):
     frontier = [State(initial_state,None,cost,None)]
 
     if frontier[0].state == desired_state:
-        return frontier[0]
+        #return frontier[0]
+        return Result(frontier[0],frontier[0].cost,False,True)
     
     while frontier:
         current_node = frontier.pop(0)
@@ -133,17 +132,18 @@ def bfs(initial_state):
             
             if child not in (frontier or explored_states):
                 if child.state == desired_state:
-                    return child
+                    #return child
+                    return Result(child,child.cost,False,True)
                 frontier.append(child)
 
 def dldfs(initial_state, limit):
-    print ('Solving puzzle with Depth Limited DFS')
+    #print ('Solving puzzle with Depth Limited DFS')
     cost = 0
     initial_node = State(initial_state,None,cost,None)
     previously_visited_nodes = []
     previously_visited_nodes.append(initial_node)
-    node, total_cost = recursive_dfs(initial_node,limit,previously_visited_nodes)
-    return node, total_cost
+    result = recursive_dfs(initial_node,limit,previously_visited_nodes)
+    return result
 
 def idfs(initial_state):
     print ('Solving puzzle with Iterative DFS')
@@ -152,10 +152,14 @@ def idfs(initial_state):
     initial_node = State(initial_state,None,cost,None)
     previously_visited_nodes = []
     previously_visited_nodes.append(initial_node)
+    #print('previously_visited_nodes: ', previously_visited_nodes)
     for current_limit in range(limit):
-        node, total_cost = recursive_dfs(initial_node,current_limit,previously_visited_nodes)
-        if isinstance(node, State):
-            return node, total_cost
+        result = recursive_dfs(initial_node,current_limit,list(previously_visited_nodes))
+        #print('current_limit: ', current_limit)
+        if result == None:
+            continue
+        if result.solved:
+            return result
     
     
 
@@ -163,9 +167,11 @@ def idfs(initial_state):
 def recursive_dfs(node,limit,previously_visited_nodes=[]):
     if node.state == desired_state:
         #print ('solution cost: ', node.cost)
-        return node,len(previously_visited_nodes)
+        #return node,len(previously_visited_nodes)
+        return Result(node,len(previously_visited_nodes),False,True)
     if limit == 0:
-        return 'CUTOFF'
+        #return 'CUTOFF'
+        return Result(None,None,True,False)
     
     cutoff_occurred = False
     
@@ -186,17 +192,17 @@ def recursive_dfs(node,limit,previously_visited_nodes=[]):
         if child not in previously_visited_nodes:
             child.cost += 1
             previously_visited_nodes.append(child)
-            result = recursive_dfs(child,limit,previously_visited_nodes)
-            if result == 'CUTOFF':
-                cutoff_occurred = True
-            elif result == None:
+            result  = recursive_dfs(child,limit,previously_visited_nodes)
+            if result == None:
                 continue
+            elif result.cutoff:
+                cutoff_occurred = True
             else:
                 return result
 
     if cutoff_occurred:
         #print ('CUTOFF2')
-        return 'CUTOFF'
+        return Result(None,None,True,False)
     else:
         #raise Exception('Error')
         return None
@@ -220,18 +226,9 @@ desired_state = list(range(0,initial_state_len))
 first_column, last_column = column_ranges()
 
 if solvable():
-    print_results(bfs(initial_state),None)
-    result,total_cost = dldfs(initial_state,12)
-    if isinstance(result, str):
-        print(result)
-    else:
-        print_results(result,total_cost)
-
-    # #result,total_cost = idfs(initial_state)
-    # if isinstance(result, str):
-    #     print(result)
-    # else:
-    #     print_results(result,total_cost)
+    print_results(bfs(initial_state))
+    print_results(dldfs(initial_state,12))
+    print_results(idfs(initial_state))
 
 else:
     print ('Puzzle is not solvable')
