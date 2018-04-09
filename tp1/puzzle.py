@@ -139,21 +139,21 @@ def dldfs(initial_state, limit):
     print ('Solving puzzle with Depth Limited DFS')
     cost = 0
     initial_node = State(initial_state,None,cost,None)
-    previously_visited_nodes = []
-    previously_visited_nodes.append(initial_node)
+    previously_visited_nodes = set()
+    previously_visited_nodes.add(initial_node.str_state)
     result = recursive_dfs(initial_node,limit,previously_visited_nodes)
     return result
 
 def idfs(initial_state):
     print ('Solving puzzle with Iterative DFS')
     cost = 0
-    limit = 100
+    limit = 1000
     initial_node = State(initial_state,None,cost,None)
-    previously_visited_nodes = []
-    previously_visited_nodes.append(initial_node)
+    previously_visited_nodes = set()
+    previously_visited_nodes.add(initial_node.str_state)
     #print('previously_visited_nodes: ', previously_visited_nodes)
     for current_limit in range(limit):
-        result = recursive_dfs(initial_node,current_limit,list(previously_visited_nodes))
+        result = recursive_dfs(initial_node,current_limit,previously_visited_nodes.copy())
         #print('current_limit: ', current_limit)
         if result == None:
             continue
@@ -188,9 +188,9 @@ def recursive_dfs(node,limit,previously_visited_nodes=[]):
         new_moves_list = list(node.move_list)
         new_moves_list.append(move)
         child = State(new_state,node,cost,new_moves_list)
-        if child not in previously_visited_nodes:
+        if child.str_state not in previously_visited_nodes:
             child.cost += 1
-            previously_visited_nodes.append(child)
+            previously_visited_nodes.add(child.str_state)
             result  = recursive_dfs(child,limit,previously_visited_nodes)
             if result == None:
                 continue
@@ -225,8 +225,8 @@ desired_state = list(range(0,initial_state_len))
 first_column, last_column = column_ranges()
 
 if solvable():
-    print_results(bfs(initial_state))
-    #print_results(dldfs(initial_state,12))
+    #print_results(bfs(initial_state))
+    print_results(dldfs(initial_state,100))
     #print_results(idfs(initial_state))
 
 else:
