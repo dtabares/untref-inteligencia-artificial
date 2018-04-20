@@ -1,8 +1,9 @@
 class State:
-  def __init__(self,state,parent,cost,move_list):
+  def __init__(self,state,parent,cost,move_list,depth=0):
     self.state = state
     self.parent = parent
     self.cost = cost
+    self.depth = depth
 
     if self.state:
       self.str_state = ''.join(str(e) for e in self.state)

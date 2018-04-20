@@ -5,6 +5,9 @@ import math
 from state import State
 from result import Result
 
+#GLOBAL
+visited_nodes = set()
+
 def solvable():
     initial_state_wo_zero = list(initial_state)
     initial_state_wo_zero.remove(0)
@@ -53,6 +56,8 @@ def print_results(result):
         print('Evaluated Positions: ',result.cost)
         print('Min Cost: ', move_list_len)
         print('\n \n')
+    else:
+        print('Puzzle could not be solved')
 
 
 def find_blank_pos(state):
@@ -136,75 +141,53 @@ def bfs(initial_state):
                 frontier.append(child)
 
 def dldfs(initial_state, limit):
-    print ('Solving puzzle with Depth Limited DFS')
+    visited_nodes.clear()
     cost = 0
-    initial_node = State(initial_state,None,cost,None)
-    previously_visited_nodes = set()
-    previously_visited_nodes.add(initial_node.str_state)
-    result = recursive_dfs(initial_node,limit,previously_visited_nodes)
-    return result
+    frontier = [State(initial_state,None,cost,None)]
+    
+    while frontier:
+        #print('frontier size: ', len(frontier))
+        if frontier[0].depth <= limit:
+            #print('Limit: ', limit)
+            current_node = frontier.pop(0)
+            #print('current node depth: ',current_node.depth)
+            visited_nodes.add(current_node.str_state)
+            if current_node.state == desired_state:
+                return Result(current_node,current_node.cost,False,True)
+            cost += 1
+            blank_pos = find_blank_pos(current_node.state)
+            for move in allowed_moves(blank_pos):
+                new_state = globals()[move](current_node.state,blank_pos)
+                new_moves_list = list(current_node.move_list)
+                new_moves_list.append(move)
+                #print('new move list: ', str(new_moves_list))
+                
+                child = State(new_state,current_node,cost,new_moves_list,current_node.depth +1)
+                #print('child node depth: ', child.depth)
+                if child.str_state not in visited_nodes:
+                    frontier.insert(0,child)
+                    #visited_nodes.add(child.str_state)
+
+        else:
+            #print('Sigo con el siguiente de la frontera, este supera el limite')
+            frontier.pop(0)
+    
+    return Result(None,None,True,False)
+
 
 def idfs(initial_state):
     print ('Solving puzzle with Iterative DFS')
-    cost = 0
-    limit = 1000
-    initial_node = State(initial_state,None,cost,None)
-    previously_visited_nodes = set()
-    previously_visited_nodes.add(initial_node.str_state)
-    #print('previously_visited_nodes: ', previously_visited_nodes)
+    limit = 100
     for current_limit in range(limit):
-        result = recursive_dfs(initial_node,current_limit,previously_visited_nodes.copy())
+        result = dldfs(initial_state,current_limit)
         #print('current_limit: ', current_limit)
+        #print('-----------------------------------')
         if result == None:
             continue
-        if result.solved:
-            return result
-    
-    
-
-
-def recursive_dfs(node,limit,previously_visited_nodes=[]):
-    if node.state == desired_state:
-        #print ('solution cost: ', node.cost)
-        #return node,len(previously_visited_nodes)
-        return Result(node,len(previously_visited_nodes),False,True)
-    if limit == 0:
-        #return 'CUTOFF'
-        return Result(None,None,True,False)
-    
-    cutoff_occurred = False
-    
-    #print('child node state: ', str(node.state))
-    #print('limit: ', limit)
-    #print('previously_visited_nodes len: ', len(previously_visited_nodes))
-    cost = node.cost
-    #print('cost: ', cost)
-    limit = limit - 1
-
-    blank_pos = find_blank_pos(node.state)
-    for move in allowed_moves(blank_pos):
-        #print('move: ',move)
-        new_state = globals()[move](node.state,blank_pos)
-        new_moves_list = list(node.move_list)
-        new_moves_list.append(move)
-        child = State(new_state,node,cost,new_moves_list)
-        if child.str_state not in previously_visited_nodes:
-            child.cost += 1
-            previously_visited_nodes.add(child.str_state)
-            result  = recursive_dfs(child,limit,previously_visited_nodes)
-            if result == None:
-                continue
-            elif result.cutoff:
-                cutoff_occurred = True
-            else:
+        else:   
+            if result.solved:
                 return result
-
-    if cutoff_occurred:
-        #print ('CUTOFF2')
-        return Result(None,None,True,False)
-    else:
-        #raise Exception('Error')
-        return None
+    return Result(None,None,True,False)
 
 
 if len(sys.argv) != 2:
@@ -220,14 +203,18 @@ boundary = int(math.sqrt( initial_state_len ))
 
 # Sets the desired state
 desired_state = list(range(0,initial_state_len))
-
+#desired_state = [6,1,5,2,4,7,0,3,8]
 #Calculates the positions of the most left/right columns which restric some moves
 first_column, last_column = column_ranges()
 
+
+
 if solvable():
     print_results(bfs(initial_state))
-    print_results(dldfs(initial_state,100))
-    print_results(idfs(initial_state))
+    #print ('Solving puzzle with Depth Limited DFS')
+    print_results(dldfs(initial_state,6))
+    #visited_nodes.clear()
+    #print_results(idfs(initial_state))
 
 else:
     print ('Puzzle is not solvable')
