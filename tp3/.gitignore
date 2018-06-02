@@ -1,2 +1,5 @@
 test_set/*
 training_set/*
+*.hdf5*
+.directory
+.ipynb_checkpoints/
