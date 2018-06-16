@@ -3,6 +3,7 @@
 from tkinter import Tk, Canvas, Frame, BOTH
 import random
 import numpy as np
+from move_memory import MoveMememory
 
 moves = ['UP','LEFT','RIGHT','DOWN']
 oposite_moves = {'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT','RIGHT': 'LEFT'}
@@ -11,9 +12,15 @@ oposite_moves = {'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT','RIGHT': 'LEFT'}
 rectangles = []
 rectangle_h = 50
 rectangle_w = 50
-awards = []
+rewards = []
 x1 = None
 x2 = None
+number_of_moves = 0
+score = 0
+memory = {}
+start_position = 0
+end_position = 9
+end_flag = False
 
 def draw_x(x,y):
   canvas.delete(x1)
@@ -22,15 +29,47 @@ def draw_x(x,y):
   x2 = canvas.create_line(x + rectangle_w, y, x, y + rectangle_h)
 
 def random_move():
-  intended_move = random.choice(moves)
-  actual_move = probabilities_for_a_move(intended_move)
-  return actual_move
+  intended_direction = random.choice(moves)
+  actual_direction = probabilities_for_a_move(intended_direction)
+  return actual_direction
 
-def probabilities_for_a_move(intended_move):
-  moves_with_probabilities = {'UP': 0.2, 'DOWN':0.2, 'LEFT': 0.2,'RIGHT': 0.2}
-  moves_with_probabilities[intended_move] = 0.8
-  moves_with_probabilities[oposite_moves[intended_move]] = 0
+def probabilities_for_a_move(intended_direction):
+  moves_with_probabilities = {'UP': 0.1, 'DOWN':0.1, 'LEFT': 0.1,'RIGHT': 0.1}
+  moves_with_probabilities[intended_direction] = 0.8
+  moves_with_probabilities[oposite_moves[intended_direction]] = 0
   return moves_with_probabilities
+
+def calculate_new_pos_and_reward(actual_pos,direction):
+  if (direction == 'UP'):
+    if (actual_pos < 10):
+      new_pos = actual_pos
+    else:
+      new_pos = actual_pos - 10
+  elif (direction == 'DOWN'):
+    if (actual_pos > 19):
+      new_pos = actual_pos
+    else:
+      new_pos = actual_pos + 10
+  elif (direction == 'LEFT'):
+    if (actual_pos == 0 or actual_pos == 10 or actual_pos == 20):
+      new_pos = actual_pos
+    else:
+      new_pos = actual_pos - 1
+  else:
+    if (actual_pos == 9 or actual_pos == 19 or actual_pos == 29):
+      new_pos = actual_pos
+    else:
+      new_pos = actual_pos + 1
+  return new_pos, rewards[new_pos]
+
+def move(actual_pos):
+  direction = random_move()
+  new_pos, reward = calculate_new_pos_and_reward(actual_pos,direction)
+  score = score + reward
+  number_of_moves = number_of_moves + 1
+  if (new_pos == end_position):
+    end_flag = True
+  
 
 
 
@@ -43,27 +82,27 @@ root = Tk()
 root.geometry("800x250+300+300")
 root.title("UNTREF - IA - TP 4") 
 canvas = Canvas(root)
-for x in range(1, 11):
-          for y in range(1, 4):
-            init_x = x * rectangle_w
-            init_y = y * rectangle_h
-            #print("pos inicio x:", init_x)
-            #print("pos inicio y:",init_y)
-            #print("pos fin x:",init_x + rectangle_w)
-            #print("pos fin y:",init_y + rectangle_h)
-            rectangle = canvas.create_rectangle(init_x,init_y,init_x + rectangle_w,init_y + rectangle_h)
-            rectangles.append(rectangle)
-            if y == 1:
-              if x == 1:
-                awards.append(0)
-              elif x == 10:
-                awards.append(10)
-              else:
-                awards.append(-10)
-            else:
-              awards.append(0)
+for y in range(1, 4):
+  for x in range(1, 11):
+    init_x = x * rectangle_w
+    init_y = y * rectangle_h
+    #print("pos inicio x:", init_x)
+    #print("pos inicio y:",init_y)
+    #print("pos fin x:",init_x + rectangle_w)
+    #print("pos fin y:",init_y + rectangle_h)
+    rectangle = canvas.create_rectangle(init_x,init_y,init_x + rectangle_w,init_y + rectangle_h)
+    rectangles.append(rectangle)
+    if y == 1:
+      if x == 1:
+        rewards.append(0)
+      elif x == 10:
+        rewards.append(10)
+      else:
+        rewards.append(-10)
+    else:
+      rewards.append(0)
         
-for x in awards:
+for x in rewards:
   print(x)
 canvas.pack(fill=BOTH, expand=1)
 root.mainloop()
