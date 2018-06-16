@@ -64,14 +64,30 @@ def calculate_new_pos_and_reward(actual_pos,direction):
 
 def move(actual_pos):
   direction = random_move()
+  print("direction: ", direction)
   new_pos, reward = calculate_new_pos_and_reward(actual_pos,direction)
+  global score, end_flag
   score = score + reward
+  global number_of_moves
   number_of_moves = number_of_moves + 1
   if (new_pos == end_position):
     end_flag = True
+  return new_pos
   
 
-
+def learn():
+  #1000 iterations
+  for x in range(0,1):
+    global score
+    score = 0
+    global number_of_moves
+    number_of_moves = 0
+    pos = start_position
+    while (end_flag == False):
+      print("pos: ", pos)
+      print("score:", score)
+      print("number_of_moves",number_of_moves)
+      pos = move(pos)
 
 # Define la ventana principal de la aplicación
 root = Tk()
@@ -105,4 +121,5 @@ for y in range(1, 4):
 for x in rewards:
   print(x)
 canvas.pack(fill=BOTH, expand=1)
-root.mainloop()
+#root.mainloop()
+learn()
