@@ -4,6 +4,7 @@ from tkinter import Tk, Canvas, Frame, BOTH
 import random
 import numpy as np
 from move_memory import MoveMememory
+from time import sleep
 
 #Allowed moves in the board
 moves = ['UP','LEFT','RIGHT','DOWN']
@@ -28,6 +29,7 @@ start_position = 0
 end_position = grid_size_x - 1
 end_flag = False
 q_table = np.zeros((grid_size_x * grid_size_y, len(moves), 1))
+learning_rate = 1
 
 #Needed for world moves and actions
 fringe_left_values = []
@@ -37,11 +39,27 @@ for i in range(grid_size_y):
   fringe_right_values.append((grid_size_x * i) + grid_size_x - 1)
 
 
-def draw_x(x,y):
-  canvas.delete(x1)
-  canvas.delete(x2)
+def draw_x(pos):
+  global x1,x2
+  if x1 is not None:
+    canvas.delete(x1)
+  if x2 is not None:
+    canvas.delete(x2)
+  if (pos < grid_size_x):
+    x = (pos + 1) * rectangle_w
+    y = rectangle_h
+  elif (grid_size_x <= pos < grid_size_x * 2 ):
+    x = (pos + 1 - grid_size_x) * rectangle_w
+    y = rectangle_h * 2
+  else:
+    x = (pos + 1 - (grid_size_x * 2)) * rectangle_w
+    y = rectangle_h * 3
   x1 = canvas.create_line(x, y, x + rectangle_w, y + rectangle_h)
   x2 = canvas.create_line(x + rectangle_w, y, x, y + rectangle_h)
+
+def reset_canvas():
+  canvas.delete(x1)
+  canvas.delete(x2)
 
 def random_move():
   intended_direction = random.choice(moves)
@@ -101,10 +119,13 @@ def learn():
     number_of_moves = 0
     pos = start_position
     while (end_flag == False):
+      draw_x(pos)
+      root.update()
       print("pos: ", pos)
       print("score:", score)
       print("number_of_moves",number_of_moves)
       pos = move(pos)
+      sleep(0.1)
 
 # Define la ventana principal de la aplicación
 root = Tk()
