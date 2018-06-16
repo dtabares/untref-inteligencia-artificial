@@ -8,7 +8,7 @@ from move_memory import MoveMememory
 moves = ['UP','LEFT','RIGHT','DOWN']
 oposite_moves = {'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT','RIGHT': 'LEFT'}
 
-
+iterations = 1
 rectangles = []
 rectangle_h = 50
 rectangle_w = 50
@@ -30,14 +30,17 @@ def draw_x(x,y):
 
 def random_move():
   intended_direction = random.choice(moves)
-  actual_direction = probabilities_for_a_move(intended_direction)
+  move_list, probabilities = probabilities_for_a_move(intended_direction)
+  actual_direction = np.random.choice(move_list,1,p=probabilities)
   return actual_direction
 
 def probabilities_for_a_move(intended_direction):
   moves_with_probabilities = {'UP': 0.1, 'DOWN':0.1, 'LEFT': 0.1,'RIGHT': 0.1}
   moves_with_probabilities[intended_direction] = 0.8
   moves_with_probabilities[oposite_moves[intended_direction]] = 0
-  return moves_with_probabilities
+  k = list(moves_with_probabilities.keys())
+  v = list(moves_with_probabilities.values())
+  return k,v
 
 def calculate_new_pos_and_reward(actual_pos,direction):
   if (direction == 'UP'):
@@ -76,8 +79,7 @@ def move(actual_pos):
   
 
 def learn():
-  #1000 iterations
-  for x in range(0,1):
+  for x in range(iterations):
     global score
     score = 0
     global number_of_moves
