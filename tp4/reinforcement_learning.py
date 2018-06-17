@@ -10,7 +10,7 @@ from time import sleep
 moves = ['UP','LEFT','RIGHT','DOWN']
 oposite_moves = {'UP': 'DOWN', 'DOWN': 'UP', 'LEFT': 'RIGHT','RIGHT': 'LEFT'}
 #Number of iterations for training
-iterations = 1
+iterations = 2
 #Drawing stuff
 rectangles = []
 rectangle_h = 50
@@ -29,7 +29,8 @@ start_position = 0
 end_position = grid_size_x - 1
 end_flag = False
 q_table = np.zeros((grid_size_x * grid_size_y, len(moves), 1))
-learning_rate = 1
+learning_rate = 0.9
+decay = 0.001
 
 #Needed for world moves and actions
 fringe_left_values = []
@@ -111,21 +112,22 @@ def move(actual_pos):
   return new_pos
   
 
-def learn():
-  for x in range(iterations):
-    global score
+def q_learning():
+  for iter in range(iterations):
+    global score, end_flag, number_of_moves
     score = 0
-    global number_of_moves
+    end_flag = False
     number_of_moves = 0
     pos = start_position
     while (end_flag == False):
       draw_x(pos)
       root.update()
+      print("iteration #:", iter)
       print("pos: ", pos)
       print("score:", score)
       print("number_of_moves",number_of_moves)
       pos = move(pos)
-      sleep(0.1)
+      sleep(0.01)
 
 # Define la ventana principal de la aplicación
 root = Tk()
@@ -159,5 +161,5 @@ for y in range(1, grid_size_y + 1):
 for x in rewards:
   print(x)
 canvas.pack(fill=BOTH, expand=1)
-learn()
+q_learning()
 root.mainloop()
