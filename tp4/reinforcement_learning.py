@@ -35,7 +35,7 @@ end_flag = False
 q_table = np.zeros((grid_size_x * grid_size_y, len(moves), 1))
 move_type = []
 #learning rate
-alpha = 0.6
+alpha = 0.3
 decay = 0.000001
 eps = 0.9
 gamma = 0.9
@@ -137,7 +137,6 @@ def q_learning():
   for iter in range(iterations):
     print("iteration #:", iter)
     global score, end_flag, number_of_moves,decay, best_score,eps, gamma
-    print("gamma: ", gamma)
     score = 0
     end_flag = False
     number_of_moves = 0
