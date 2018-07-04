@@ -3,7 +3,6 @@
 from tkinter import Tk, Canvas, Frame, BOTH
 import random
 import numpy as np
-from move_memory import MoveMememory
 from time import sleep
 import matplotlib.pyplot as plt
 import pickle
